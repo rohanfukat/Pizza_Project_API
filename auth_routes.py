@@ -17,6 +17,9 @@ session = Session(bind = engine)
 
 @auth_router.get("/")
 async def hello(Authorize:AuthJWT=Depends()):
+    """
+    Testing Route for hello world
+    """
     try:
         Authorize.jwt_required()
     except Exception as e:
@@ -26,6 +29,14 @@ async def hello(Authorize:AuthJWT=Depends()):
 
 @auth_router.post("/signup", status_code = status.HTTP_201_CREATED)
 async def signup(user : SignUPModel):
+    """
+    SignUp route requeste body
+                username:int
+                email:str
+                password:str
+                is_staff:bool
+                is_active:bool   
+    """
     db_email = session.query(User).filter(User.email == user.email).first()
 
     if(db_email is not None):
@@ -54,6 +65,10 @@ async def signup(user : SignUPModel):
 
 @auth_router.post("/login", status_code=status.HTTP_200_OK)
 async def login(login_data:LoginModel, Authorize:AuthJWT=Depends()):
+    """
+                username:str
+                password:str
+    """
     db_user = session.query(User).filter(User.username == login_data.username).first()
     if db_user and check_password_hash(db_user.password ,login_data.password):
         access_token = Authorize.create_access_token(subject=db_user.username)
@@ -70,6 +85,10 @@ async def login(login_data:LoginModel, Authorize:AuthJWT=Depends()):
     
 @auth_router.get("/refresh")
 async def refresh_token(Authorize:AuthJWT=Depends()):
+    """
+     This creates a new access token. It requires an refresh token.
+     The function automatically fetches the data from the header and performs the authorization
+    """
     try:
         Authorize.jwt_refresh_token_required()
     except Exception as e:

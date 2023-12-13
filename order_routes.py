@@ -78,6 +78,13 @@ async def get_user_order(username : str ,Authorize:AuthJWT=Depends(authorize_use
     
 @order_router.put("/update_order/{order_id}")
 async def update_order(order_id : int, order:OrderModel, Authorize:AuthJWT=Depends(authorize_user)):
+    """
+    #Response Body
+            id:order_update.id,
+            quantity:order_update.quantity,
+            pizza_size:order_update.pizza_size,
+            order_status:order_update.order_status,
+    """
     order_update = session.query(Order).filter(Order.id == order_id).first()
 
     order_update.quantity = order.quantity
