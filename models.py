@@ -17,7 +17,6 @@ class User(Base):
     def __repr__(self):
         return {"User":self.username}
     
-
 class Order(Base):
     __tablename__ = 'orders'
 
@@ -43,5 +42,7 @@ class Order(Base):
     user = relationship('User',back_populates="orders")
 
 
-    def __repr(self):
-        return f"<Order {self.username}"
+    def __repr__(self):
+        return f"<Order {self.pizza_size}{self.quantity}"
+    
+

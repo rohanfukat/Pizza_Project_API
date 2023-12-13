@@ -47,3 +47,7 @@ class OrderModel(BaseModel):
                 "pizza_size":"LARGE"
             }
         }
+
+class OrderStatus(BaseModel):
+    id:int
+    order_status : Optional[str] = "PENDING"

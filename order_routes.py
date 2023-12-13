@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from schemas import OrderModel
+from schemas import OrderModel, OrderStatus
 from fastapi_jwt_auth import AuthJWT
 from fastapi.encoders import jsonable_encoder
 from models import Order, User
@@ -76,15 +76,45 @@ async def get_user_order(username : str ,Authorize:AuthJWT=Depends(authorize_use
     else:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail = "You are not a superuser")
     
-@order_router.put("/update_order")
-async def update_order(order_id : int,order:OrderModel, Authorize:AuthJWT=Depends(authorize_user)):
+@order_router.put("/update_order/{order_id}")
+async def update_order(order_id : int, order:OrderModel, Authorize:AuthJWT=Depends(authorize_user)):
     order_update = session.query(Order).filter(Order.id == order_id).first()
 
     order_update.quantity = order.quantity
-    order_update.size = order.pizza_size
+    order_update.pizza_size = order.pizza_size
 
     session.commit()
-    return jsonable_encoder({order_update})
+
+    response={
+            "id":order_update.id,
+            "quantity":order_update.quantity,
+            "pizza_size":order_update.pizza_size,
+            "order_status":order_update.order_status,
+        }
+    
+    return jsonable_encoder({"order_update":response})
+
+@order_router.patch("/update_order_status")
+async def update_order_status(order:OrderStatus, Authorize:AuthJWT=Depends(authorize_user)):
+    user = Authorize.get_jwt_subject()
+
+    current_user = session.query(User).filter(User.username == user).first()
+
+    if current_user.is_staff:
+        order_update = session.query(Order).filter(Order.id == order.id).first()
+        order_update.order_status = order.order_status
+    
+    session.commit()
+    return jsonable_encoder({"Order Status":order_update.order_status})
+
+@order_router.delete("/delete_order/{order_id}")
+async def delete_order(order_id : int, Authorize:AuthJWT=Depends(authorize_user)):
+    order = session.query(Order).filter(Order.id == order_id).first()
+    session.delete(order)
+    session.commit()
+    return jsonable_encoder({f"Order deleted of id {order_id}"})
+
+
     
         
 
